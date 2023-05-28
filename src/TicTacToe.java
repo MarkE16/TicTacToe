@@ -3,6 +3,7 @@ import java.util.Arrays;
 public class TicTacToe {
   private int turns = 0;
   private final char[][] board = new char[3][3];
+  private boolean AIMode;
 
   private void createBoard() {
     for (char[] chars : board) {
@@ -10,7 +11,11 @@ public class TicTacToe {
     }
   }
 
-  public TicTacToe() {
+  public TicTacToe(boolean AIMode) {
+    if (AIMode) {
+      System.out.println("[!] Playing in AI mode.");
+    }
+    this.AIMode = AIMode;
     this.createBoard(); // When creating the object, initialize the board with default values.
   }
 
@@ -48,7 +53,50 @@ public class TicTacToe {
     this.board[row][col] = this.getCurrentPlayer();
   }
 
-  public boolean horizontalWin(char player) {
+  public boolean AIModeActive() {
+    return this.AIMode;
+  }
+
+  public void runAITurn() {
+    int emptySpots = 0;
+    int[][] spotCords;
+
+    // Get the number of empty positions.
+    for (int row = 0; row < this.board.length; row++) {
+      for (int col = 0; col < this.board[row].length; col++) {
+        if (this.isValidPosition(row, col)) {
+          emptySpots++;
+        }
+      }
+    }
+
+    spotCords = new int[emptySpots][2];
+    int arrIdx = 0;
+
+    // Get all the current empty positions.
+    for (int row = 0; row < this.board.length; row++) {
+      for (int col = 0; col < this.board[row].length; col++) {
+        if (this.isValidPosition(row, col)) {
+          spotCords[arrIdx] = new int[]{row, col};
+          arrIdx++;
+        }
+      }
+    }
+
+    // Choose a place.
+    int random = (int) (Math.random() * spotCords.length);
+    this.play(
+      spotCords[random][0], // The chosen row
+      spotCords[random][1] // The chosen col
+    );
+    if (this.hasWinner()) {
+      System.out.println("GAME OVER! THE AI WON!");
+    } else {
+      this.incrementTurn();
+    }
+  }
+
+  private boolean horizontalWin(char player) {
     int rowCount = 0;
     for (char[] row : this.board) {
       for (char position : row) {
@@ -64,7 +112,7 @@ public class TicTacToe {
     return false;
   }
 
-  public boolean verticalWin(char player) {
+  private boolean verticalWin(char player) {
     int colCount = 0;
     for (int col = 0; col < this.board[0].length; col++) {
       for (int row = 0; row < this.board.length; row++) {
@@ -75,11 +123,12 @@ public class TicTacToe {
       if (colCount == 3) {
         return true;
       }
+      colCount = 0;
     }
     return false;
   }
 
-  public boolean diagonalWin(char player) {
+  private boolean diagonalWin(char player) {
     char[][] board = this.board;
     return (
       (board[0][0] == player && board[1][1] == player && board[2][2] == player) ||
@@ -103,6 +152,6 @@ public class TicTacToe {
 
   @Override
   public String toString() {
-    return "A Tic-Tac-Toe game that is currently playing with " + this.turns + " turns.";
+    return "A Tic-Tac-Toe game that is currently playing with " + this.turns + " turns. AI MODE: " + (AIMode ? "ACTIVE" : "NOT ACTIVE");
   }
 }
