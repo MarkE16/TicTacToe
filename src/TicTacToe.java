@@ -1,9 +1,13 @@
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class TicTacToe {
   private int turns = 0;
   private final char[][] board = new char[3][3];
-  private boolean AIMode;
+  private final boolean AIMode;
+  private final Scanner input;
+  private boolean playing;
+  private final int difficulty;
 
   private void createBoard() {
     for (char[] chars : board) {
@@ -11,13 +15,21 @@ public class TicTacToe {
     }
   }
 
-  public TicTacToe(boolean AIMode) {
+  public boolean isPlaying() {
+    return this.playing;
+  }
+
+  public TicTacToe(boolean AIMode, int difficulty) {
     if (AIMode) {
       System.out.println("[!] Playing in AI mode.");
     }
     this.AIMode = AIMode;
+    this.input = new Scanner(System.in);
+    this.playing = true;
+    this.difficulty = difficulty;
     this.createBoard(); // When creating the object, initialize the board with default values.
   }
+
 
   public void printBoard() {
     int row;
@@ -43,7 +55,7 @@ public class TicTacToe {
   }
 
   public boolean isValidPosition(int row, int col) {
-    if (row >= board.length || col >= board[row].length) {
+    if ((row >= board.length || row < 0) || (col >= board[row].length || col < 0)) {
       return false;
     }
     return this.board[row][col] == '.';
@@ -51,26 +63,19 @@ public class TicTacToe {
 
   public void play(int row, int col) {
     this.board[row][col] = this.getCurrentPlayer();
-  }
 
-  public boolean AIModeActive() {
-    return this.AIMode;
+    if (this.hasWinner()) {
+      handleGameOver(true);
+    } else if (!this.hasWinner() && this.getNumOfPositions(false) == 0) {
+      handleGameOver(false);
+    } else {
+      this.incrementTurn();
+    }
   }
 
   public void runAITurn() {
-    int emptySpots = 0;
-    int[][] spotCords;
-
-    // Get the number of empty positions.
-    for (int row = 0; row < this.board.length; row++) {
-      for (int col = 0; col < this.board[row].length; col++) {
-        if (this.isValidPosition(row, col)) {
-          emptySpots++;
-        }
-      }
-    }
-
-    spotCords = new int[emptySpots][2];
+    int emptySpots = this.getNumOfPositions(true);
+    int[][] spotCords = new int[emptySpots][2];
     int arrIdx = 0;
 
     // Get all the current empty positions.
@@ -89,11 +94,6 @@ public class TicTacToe {
       spotCords[random][0], // The chosen row
       spotCords[random][1] // The chosen col
     );
-    if (this.hasWinner()) {
-      System.out.println("GAME OVER! THE AI WON!");
-    } else {
-      this.incrementTurn();
-    }
   }
 
   private boolean horizontalWin(char player) {
@@ -136,19 +136,57 @@ public class TicTacToe {
     );
   }
 
-  public boolean hasWinner() {
+  private boolean hasWinner() {
     char player = this.getCurrentPlayer();
     return this.horizontalWin(player) || this.verticalWin(player) || this.diagonalWin(player);
   }
 
-  public void restart() {
+  private void restart() {
     this.createBoard();
     this.turns = 0;
   }
 
-  public void incrementTurn() {
+  private void incrementTurn() {
     this.turns++;
   }
+
+  public int getTurns() {
+    return this.turns;
+  }
+
+  private int getNumOfPositions(boolean closeToPlayer) {
+    int total = 0;
+    char player = this.getCurrentPlayer();
+    for (int row = 0; row < this.board.length; row++) {
+      for (int col = 0; col < this.board[row].length; col++) {
+        if (this.isValidPosition(row, col)) {
+          total++;
+        }
+      }
+    }
+
+    return total;
+  }
+
+
+  private void handleGameOver(boolean isWin) {
+    System.out.println("----- Final Board -----");
+    this.printBoard();
+    System.out.println();
+    if (isWin) {
+      System.out.print("Congratulations! Player " + this.getCurrentPlayer() + " wins! Play Again? (y/n): ");
+    } else {
+      System.out.print("GAME OVER! It's a tie! Play Again? (y/n): ");
+    }
+    char response = input.nextLine().charAt(0);
+    if (response == 'n') {
+      System.out.println("Goodbye!");
+      this.playing = false;
+      return;
+    }
+    this.restart();
+  }
+
 
   @Override
   public String toString() {
