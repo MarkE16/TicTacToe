@@ -55,7 +55,7 @@ public class TicTacToe {
   }
 
   public boolean isValidPosition(int row, int col) {
-    if (row >= board.length || col >= board[row].length) {
+    if ((row >= board.length || row < 0) || (col >= board[row].length || col < 0)) {
       return false;
     }
     return this.board[row][col] == '.';
