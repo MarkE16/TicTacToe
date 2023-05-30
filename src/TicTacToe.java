@@ -4,9 +4,10 @@ import java.util.Scanner;
 public class TicTacToe {
   private int turns = 0;
   private final char[][] board = new char[3][3];
-  private boolean AIMode;
-  private Scanner input;
+  private final boolean AIMode;
+  private final Scanner input;
   private boolean playing;
+  private final int difficulty;
 
   private void createBoard() {
     for (char[] chars : board) {
@@ -18,29 +19,17 @@ public class TicTacToe {
     return this.playing;
   }
 
-  public TicTacToe(boolean AIMode) {
+  public TicTacToe(boolean AIMode, int difficulty) {
     if (AIMode) {
       System.out.println("[!] Playing in AI mode.");
     }
     this.AIMode = AIMode;
     this.input = new Scanner(System.in);
     this.playing = true;
+    this.difficulty = difficulty;
     this.createBoard(); // When creating the object, initialize the board with default values.
   }
 
-  public int getRow() {
-    System.out.print("Row: ");
-    int row = input.nextInt();
-    input.nextLine();
-    return row;
-  }
-
-  public int getCol() {
-    System.out.print("Col: ");
-    int col = input.nextInt();
-    input.nextLine();
-    return col;
-  }
 
   public void printBoard() {
     int row;
@@ -77,20 +66,15 @@ public class TicTacToe {
 
     if (this.hasWinner()) {
       handleGameOver(true);
-    } else if (!this.hasWinner() && this.getNumOfPositions() == 0) {
+    } else if (!this.hasWinner() && this.getNumOfPositions(false) == 0) {
       handleGameOver(false);
-    }
-    else {
+    } else {
       this.incrementTurn();
     }
   }
 
-  public boolean AIModeActive() {
-    return this.AIMode;
-  }
-
   public void runAITurn() {
-    int emptySpots = this.getNumOfPositions();
+    int emptySpots = this.getNumOfPositions(true);
     int[][] spotCords = new int[emptySpots][2];
     int arrIdx = 0;
 
@@ -170,8 +154,9 @@ public class TicTacToe {
     return this.turns;
   }
 
-  private int getNumOfPositions() {
+  private int getNumOfPositions(boolean closeToPlayer) {
     int total = 0;
+    char player = this.getCurrentPlayer();
     for (int row = 0; row < this.board.length; row++) {
       for (int col = 0; col < this.board[row].length; col++) {
         if (this.isValidPosition(row, col)) {
@@ -182,6 +167,7 @@ public class TicTacToe {
 
     return total;
   }
+
 
   private void handleGameOver(boolean isWin) {
     System.out.println("----- Final Board -----");
